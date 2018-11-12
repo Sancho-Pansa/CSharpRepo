@@ -18,45 +18,35 @@ namespace HakerrankTasks
 
         public QueenAttack() : this(8)
         {
-
+            
         }
 
         public QueenAttack(int dimension) => N = dimension;
 
-        public HashSet<(int, int)> GetAllMovements((int x, int y) queen)
+        public HashSet<(int, int)> GetAllMovements((int x, int y) queen,
+            params (int a, int b)[] obstacles)
         {
-            CheckPositivity(queen.x, queen.y);
+            CheckCorrect(queen.x, queen.y);
             this.queen = queen;
-            this.AssembleMovementSet();
-            return horizontal;
-        }
+            AssembleMovementSet();
+            var movements = new HashSet<(int, int)>();
+            movements.UnionWith(horizontal);
+            movements.UnionWith(vertical);
+            movements.UnionWith(diagonal);
 
-        public int GetQueenMovementsNum((int x, int y) queenTuple, 
-            params (int obstX, int obstY)[] obstacles)
-        {
-            CheckPositivity(queenTuple.x, queenTuple.y);
-            this.queen = queenTuple;
-            foreach ((int, int) x in obstacles)
+            if (obstacles.Length > 0)
             {
-                CheckPositivity(x.Item1, x.Item2);
-                if (x.Equals(queen))
-                    throw new ArgumentException("Obstacle is on Queen's place!");
-                this.obstacles.Add(x);
+                foreach (var (a, b) in obstacles)
+                {
+                    CheckCorrect(a, b);
+                    if (a == queen.x && b == queen.y)
+                        throw new ArgumentException("Obstacle cannot occupy the Queen's coordinates");
+                    movements.Remove((a, b));
+                }
             }
+
             
-            return 0;
-        }
-        
-        private int EnumerateMovements()
-        {
-            if (obstacles.Count == 0)
-                return (N - 1) * 4;
-
-            foreach((int x, int y) in obstacles)
-            {
-                
-            }
-            return 0;
+            return movements;
         }
 
         private void AssembleMovementSet()
@@ -77,46 +67,12 @@ namespace HakerrankTasks
             }
         }
 
-        /*private int GetHorizontalCount()
-        {
-            int up = N / 2;
-            int down = up;
-
-            foreach((int, int) x in this.obstacles)
-            {
-                
-                if(x.Item2 == queen.Item2)
-                {
-                    if (x.Item1 > queen.Item1)
-                        up = x.Item1 - queen.Item1 - 1;
-                    else if (x.Item1 < queen.Item1)
-                        down = queen.Item1 - x.Item1 - 1;
-                }
-            }
-
-            return up + down;
-        }
-
-        private int GetVerticalCount()
-        {
-            int left = N / 2;
-            int right = left;
-
-            foreach((int, int) x in obstacles)
-            {
-                if(x.Item1 == queen.Item1)
-                {
-
-                }
-            }
-
-            return left + right;
-        }
-        */
-        private void CheckPositivity(int a, int b)
+        private void CheckCorrect(int a, int b)
         {
             if(a <= 0 || b <= 0)
                 throw new ArgumentException("Coordinates cannot be below 0");
+            if (a > N || b > N)
+                throw new IndexOutOfRangeException("Coordinates cannot exceed board dimension");
         }
     }
 }
